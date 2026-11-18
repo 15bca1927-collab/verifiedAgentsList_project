@@ -17,6 +17,7 @@
    cd verifiedAgentsList_project
 
 2. Set up a Python virtual environment, install dependencies, and generate the local data chunks:
+  ```bash
   python3 -m venv venv
   source venv/bin/activate
   pip install pandas openpyxl
