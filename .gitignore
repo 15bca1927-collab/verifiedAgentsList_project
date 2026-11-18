@@ -1,0 +1,15 @@
+# Virtual environment & Python cache
+venv/
+__pycache__/
+*.pyc
+*.pyo
+.env
+
+# Large binary data & database files (keep scripts & dashboard HTML)
+*.db
+*.sqlite
+*.sqlite3
+*.xlsx
+*.csv
+*.log
+agents_chunk_*.js
