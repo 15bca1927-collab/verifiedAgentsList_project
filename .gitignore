@@ -11,3 +11,11 @@ __pycache__/
 *.sqlite3
 *.log
 agents_chunk_*.js
+
+# Exclude all agent datasets & local artifacts
+bulk_data/
+venv/
+*.db
+*.csv
+*.xlsx
+*.zip
