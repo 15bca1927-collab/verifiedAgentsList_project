@@ -1,9 +1,13 @@
+import argparse
 import json
 import math
+import os
 import re
+import sqlite3
 from collections import Counter
 import pandas as pd
 
+DB_FILE = "verifiedagents_data.db"
 EXCEL_FILE = "VerifiedAgents_Submission.xlsx"
 OUTPUT_HTML = "VerifiedAgents_Dashboard.html"
 CHUNK_SIZE = 50000
@@ -45,9 +49,28 @@ def parse_geo(loc: str):
             break
     return state, city, zip_code
 
-print(f"Reading {EXCEL_FILE}...")
-xls = pd.ExcelFile(EXCEL_FILE)
-df = pd.read_excel(EXCEL_FILE, sheet_name=xls.sheet_names[0], dtype=str).fillna("")
+parser = argparse.ArgumentParser(description="VerifiedAgents Dashboard Generator")
+parser.add_argument("--source", choices=["auto", "db", "excel"], default="auto", help="Data source to build from (db is ~10x faster)")
+args = parser.parse_args()
+
+use_db = False
+if args.source == "db" or (args.source == "auto" and os.path.exists(DB_FILE)):
+    use_db = True
+
+if use_db:
+    print(f"Reading dataset directly from SQLite database ({DB_FILE})...")
+    with sqlite3.connect(DB_FILE) as conn:
+        df = pd.read_sql_query("""
+            SELECT profile_page_url, full_name, npn_number, location,
+                   phone_numbers, email_addresses, websites, appointed_companies,
+                   scraped_by
+            FROM agents ORDER BY npn_number ASC
+        """, conn, dtype=str).fillna("")
+    df.insert(0, "s_no", range(1, len(df) + 1))
+else:
+    print(f"Reading {EXCEL_FILE}...")
+    xls = pd.ExcelFile(EXCEL_FILE)
+    df = pd.read_excel(EXCEL_FILE, sheet_name=xls.sheet_names[0], dtype=str).fillna("")
 
 geo_parsed = df["location"].apply(parse_geo)
 df["state"] = [g[0] for g in geo_parsed]
